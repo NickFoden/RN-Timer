@@ -2,6 +2,7 @@ import React from "react";
 import {
   Dimensions,
   Picker,
+  Platform,
   StyleSheet,
   StatusBar,
   Text,
@@ -39,7 +40,14 @@ const styles = StyleSheet.create({
     color: "#FF851B"
   },
   picker: {
-    width: 50
+    width: 50,
+    ...Platform.select({
+      android: {
+        color: "#fff",
+        backgroundColor: "#07121b",
+        marginLeft: 10
+      }
+    })
   },
   pickerContainer: {
     alignItems: "center",
@@ -79,7 +87,9 @@ const AVAILABLE_SECONDS = createArray(60);
 export default class App extends React.Component {
   state = {
     remainingSeconds: 5,
-    isRunning: false
+    isRunning: false,
+    selectedMinutes: "0",
+    selectedSeconds: "5"
   };
 
   interval = null;
@@ -98,7 +108,10 @@ export default class App extends React.Component {
 
   start = () => {
     this.setState(state => ({
-      remainingSeconds: state.remainingSeconds - 1,
+      remainingSeconds:
+        parseInt(state.selectedMinutes, 10) * 60 +
+        parseInt(state.selectedSeconds, 10) -
+        1,
       isRunning: true
     }));
     this.interval = setInterval(() => {
@@ -117,31 +130,33 @@ export default class App extends React.Component {
   renderPickers = () => (
     <View style={styles.pickerContainer}>
       <Picker
-        selectedValue="5"
+        mode="dropdown"
+        selectedValue={this.state.selectedMinutes}
         style={styles.picker}
         itemStyle={styles.pickerItem}
         onValueChange={itemValue => {
-          // update the state
+          this.setState({ selectedMinutes: itemValue });
         }}
       >
         {AVAILABLE_MINUTES.map(value => (
           <Picker.Item key={value} label={value} value={value} />
         ))}
       </Picker>
-      <Text style={styles.picker}>Minutes</Text>
+      <Text style={styles.pickerItem}>Minutes</Text>
       <Picker
-        selectedValue="5"
+        mode="dropdown"
+        selectedValue={this.state.selectedSeconds}
         style={styles.picker}
         itemStyle={styles.pickerItem}
         onValueChange={itemValue => {
-          // update the state
+          this.setState({ selectedSeconds: itemValue });
         }}
       >
         {AVAILABLE_SECONDS.map(value => (
           <Picker.Item key={value} label={value} value={value} />
         ))}
       </Picker>
-      <Text style={styles.picker}>Seconds</Text>
+      <Text style={styles.pickerItem}>Seconds</Text>
     </View>
   );
 
